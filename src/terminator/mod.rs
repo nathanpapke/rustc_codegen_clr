@@ -144,7 +144,12 @@ pub fn handle_terminator<'tcx>(
             // FIXME: propelrly handle *all* assertion messages.
             let main = ctx.main_module();
 
-            let name = match msg.as_ref() {
+            let name = match msg.as_ref() 
+            {
+                AssertKind::InvalidEnumConstruction(_)=>{
+               
+                    format!("assert_iec")
+                }
                 AssertKind::Overflow(op, _, _) => {
                     let op: BinOp = crate::map_binop(op);
                     format!("assert_{}", op.name())
@@ -229,7 +234,7 @@ pub fn handle_terminator<'tcx>(
                 .into()]
             } else {
                 match ty.kind() {
-                    TyKind::Dynamic(_, _, rustc_middle::ty::DynKind::Dyn) => {
+                    TyKind::Dynamic(_, _) => {
                         let fat_ptr_address = place_address(place, ctx);
                         let fat_ptr_type = ctx.type_from_cache(Ty::new_ptr(
                             ctx.tcx(),
@@ -282,9 +287,7 @@ pub fn handle_terminator<'tcx>(
                             .into(),
                         ]
                     }
-                    TyKind::Dynamic(_, _, rustc_middle::ty::DynKind::DynStar) => {
-                        todo!("Can't drop dyn star yet!")
-                    }
+                   
                     _ => {
                         let sig =
                             crate::function_sig::sig_from_instance_(drop_instance, ctx).unwrap();

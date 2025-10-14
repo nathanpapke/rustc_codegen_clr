@@ -64,30 +64,7 @@ pub fn handle_rvalue<'tcx>(
     ctx: &mut MethodCompileCtx<'tcx, '_>,
 ) -> (Vec<V1Root>, V1Node) {
     match rvalue {
-        Rvalue::Len(operand) => {
-            let ty = ctx.monomorphize(operand.ty(ctx.body(), ctx.tcx()));
-            match ty.ty.kind() {
-                TyKind::Slice(inner) => {
-                    let slice_tpe = fat_ptr_to(*inner, ctx);
-                    let descriptor = FieldDesc::new(
-                        slice_tpe,
-                        ctx.alloc_string(crate::METADATA),
-                        cilly::Type::Int(Int::USize),
-                    );
-                    let addr = place_address_raw(operand, ctx);
-                    assert!(
-                        !matches!(addr, V1Node::LDLoc(_)),
-                        "improper addr {addr:?}. operand:{operand:?}"
-                    );
-                    (vec![], ld_field!(addr, ctx.alloc_field(descriptor)))
-                }
-                TyKind::Array(_ty, length) => {
-                    let len = try_resolve_const_size(ctx.monomorphize(*length)).unwrap();
-                    (vec![], V1Node::V2(ctx.alloc_node(Const::USize(len as u64))))
-                }
-                _ => todo!("Get length of type {ty:?}"),
-            }
-        }
+       
         Rvalue::Use(operand) => (vec![], handle_operand(operand, ctx)),
         // TODO: check the exact semantics of `WrapUnsafeBinder` once it has some documentation.
         Rvalue::WrapUnsafeBinder(operand, _unknown_ty) => (vec![], handle_operand(operand, ctx)),
@@ -409,14 +386,7 @@ pub fn handle_rvalue<'tcx>(
             let target = ctx.type_from_cache(*target);
             (vec![], handle_operand(operand, ctx).cast_ptr(target))
         }
-        rustc_middle::mir::Rvalue::Cast(
-            rustc_middle::mir::CastKind::PointerCoercion(
-                rustc_middle::ty::adjustment::PointerCoercion::DynStar,
-                _,
-            ),
-            _,
-            _,
-        ) => todo!("Dyn star casts unspoorted"),
+Rvalue::Cast(rustc_middle::mir::CastKind::Subtype, _, _) => todo!(),
     }
 }
 const SIMPLE_REPEAT_CAP: u64 = 16;

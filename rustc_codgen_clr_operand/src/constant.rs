@@ -120,7 +120,7 @@ fn const_slice_backer_type<'tcx>(
     Type::ClassRef(arr_tpe)
 }
 pub fn load_const_value<'tcx>(
-    const_val: ConstValue<'tcx>,
+    const_val: ConstValue,
     const_ty: Ty<'tcx>,
     ctx: &mut MethodCompileCtx<'tcx, '_>,
 ) -> V1Node {
@@ -135,11 +135,13 @@ pub fn load_const_value<'tcx>(
             let tpe = ctx.type_from_cache(tpe);
             V1Node::uninit_val(tpe, ctx)
         }
-        ConstValue::Slice { data, meta } => {
+        ConstValue::Slice {  meta,alloc_id } => {
+              // SUS
+                      let data = ctx.tcx().global_alloc(alloc_id).unwrap_memory();
             let slice_type = ctx.type_from_cache(const_ty);
             let slice_dotnet = slice_type.as_class_ref().expect("Slice type invalid!");
 
-            let alloc_id = ctx.tcx().reserve_and_set_memory_alloc(data);
+            let alloc_id = alloc_id;
 
             let ptr = if meta == 0 {
                 ctx.alloc_node(Const::USize(1 << 30))
@@ -173,7 +175,7 @@ fn load_scalar_ptr(
     ptr: rustc_middle::mir::interpret::Pointer,
     tpe: Interned<Type>,
 ) -> Interned<CILNode> {
-    let (alloc_id, offset) = ptr.into_parts();
+    let (alloc_id, offset) = ptr. into_raw_parts();
     let global_alloc = ctx.tcx().global_alloc(alloc_id.alloc_id());
     let u8_ptr = ctx.nptr(Type::Int(Int::U8));
     let u8_ptr_ptr = ctx.nptr(u8_ptr);
@@ -255,6 +257,7 @@ fn load_scalar_ptr(
             );
             CILNode::LdFtn(ctx.alloc_methodref(mref)).into_idx(ctx)
         }
+        GlobalAlloc::TypeId{..} => todo!(),
         GlobalAlloc::VTable(_, _) => {
             let (ty, polyref) = global_alloc.unwrap_vtable();
             get_vtable(

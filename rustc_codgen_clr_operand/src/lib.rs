@@ -64,7 +64,9 @@ pub fn is_uninit<'tcx>(operand: &Operand<'tcx>, ctx: &mut MethodCompileCtx<'tcx,
                     // ZeroSized has no data, so I guess it has no initialized data, so assiments using it could propably be safely skipped.
                     true
                 }
-                ConstValue::Slice { data, .. } => {
+                ConstValue::Slice { alloc_id,meta } => {
+                    // SUS
+                      let data = ctx.tcx().global_alloc(alloc_id).unwrap_memory();
                     let mask = data.inner().init_mask();
                     let mut chunks =
                         mask.range_as_init_chunks(rustc_const_eval::interpret::AllocRange {

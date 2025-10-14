@@ -1,3 +1,5 @@
+
+
 use crate::constant::static_ty;
 use cilly::{
     Access, Const, FnSig, Int, Interned, IntoAsmIndex, MethodDef, MethodDefIdx, MethodRef,
@@ -75,6 +77,7 @@ fn alloc_default_type(alloc_id: u64, ctx: &mut MethodCompileCtx<'_, '_>) -> Type
         GlobalAlloc::Function { .. } => {
             todo!()
         }
+        GlobalAlloc::TypeId{..}=>todo!(),
     };
     let tpe = match alloc.0.0.align.bytes() {
         ..1 => Int::U8,
@@ -141,6 +144,7 @@ pub fn add_allocation(
             return (ctx.load_static(field_desc));
             //todo!("Function/Vtable allocation.");
         }
+        GlobalAlloc::TypeId{..} => todo!(),
     };
 
     let const_allocation = const_allocation.inner();

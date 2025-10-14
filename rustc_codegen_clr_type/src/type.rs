@@ -129,7 +129,7 @@ pub fn get_type<'tcx>(ty: Ty<'tcx>, ctx: &mut MethodCompileCtx<'tcx, '_>) -> Typ
             }
             Type::ClassRef(cref)
         }
-        TyKind::Dynamic(_list, _, _) => {
+        TyKind::Dynamic(_list, _) => {
             let name = ctx.alloc_string("Dyn");
             let cref = ctx.alloc_class_ref(ClassRef::new(name, None, true, [].into()));
             if ctx.class_ref_to_def(cref).is_none() {

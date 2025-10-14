@@ -95,7 +95,7 @@ extern crate rustc_span;
 extern crate rustc_symbol_mangling;
 extern crate rustc_target;
 extern crate rustc_ty_utils;
-extern crate stable_mir;
+
 pub use rustc_codegen_clr_place::*;
 // Modules
 /// Code handling the creation of aggreate values (Arrays, enums,structs,tuples,etc.)
@@ -173,6 +173,9 @@ pub type AString = std::sync::Arc<Box<str>>;
 /// An instance of the codegen.
 struct MyBackend;
 impl CodegenBackend for MyBackend {
+    fn name(&self)->&'static str{
+        "cg_clr"
+    }
     fn locale_resource(&self) -> &'static str {
         ""
     }
@@ -180,21 +183,12 @@ impl CodegenBackend for MyBackend {
     fn codegen_crate<'a>(
         &self,
         tcx: TyCtxt<'_>,
-        metadata: EncodedMetadata,
-        need_metadata_module: bool,
+
     ) -> Box<dyn Any> {
         let cgus = tcx.collect_and_partition_mono_items(());
 
         let mut asm = Assembly::default();
-        if need_metadata_module {
-            use std::io::Write;
-            let mut packed_metadata = rustc_metadata::METADATA_HEADER.to_vec();
-            packed_metadata
-                .write_all(&(metadata.full().len() as u64).to_le_bytes())
-                .unwrap();
-            packed_metadata.extend(metadata.full());
-            asm.add_section(".rustc", packed_metadata);
-        }
+     
         let _ = cilly::utilis::get_environ(&mut asm);
 
         for cgu in cgus.codegen_units {
@@ -244,7 +238,7 @@ impl CodegenBackend for MyBackend {
             .to_string()
             .into();
 
-        Box::new((name, asm, metadata, CrateInfo::new(tcx, "clr".to_string())))
+        Box::new((name, asm, CrateInfo::new(tcx, "clr".to_string())))
     }
 
     fn target_config(&self, sess: &Session) -> rustc_codegen_ssa::TargetConfig {
@@ -253,7 +247,7 @@ impl CodegenBackend for MyBackend {
         let target_features = if sess.target.arch == "x86_64" && sess.target.os != "none" {
             // x86_64 mandates SSE2 support and rustc requires the x87 feature to be enabled
             vec![
-                sym::fsxr,
+             
                 sym::sse,
                 //sym::sse2,
                 rustc_span::Symbol::intern("x87"),
@@ -292,8 +286,8 @@ impl CodegenBackend for MyBackend {
     ) -> (CodegenResults, FxIndexMap<WorkProductId, WorkProduct>) {
         std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             use std::io::Write;
-            let (_asm_name, asm, metadata, crate_info) = *ongoing_codegen
-                .downcast::<(IString, Assembly, EncodedMetadata, CrateInfo)>()
+            let (_asm_name, asm, crate_info) = *ongoing_codegen
+                .downcast::<(IString, Assembly, CrateInfo)>()
                 .expect("in join_codegen: ongoing_codegen is not an Assembly");
             let asm_name = "";
             let serialized_asm_path =
@@ -324,8 +318,7 @@ impl CodegenBackend for MyBackend {
             let codegen_results = CodegenResults {
                 modules,
                 allocator_module: None,
-                metadata_module: None,
-                metadata,
+          
                 crate_info,
             };
             (codegen_results, FxIndexMap::default())
@@ -333,9 +326,9 @@ impl CodegenBackend for MyBackend {
         .expect("Could not join_codegen")
     }
     /// Collects all the files emmited by the codegen for a specific crate, and turns them into a .rlib file containg the serialized assembly IR and metadata.
-    fn link(&self, sess: &Session, codegen_results: CodegenResults, outputs: &OutputFilenames) {
+    fn link(&self, sess: &Session, codegen_results: CodegenResults, metadata:EncodedMetadata, outputs: &OutputFilenames) {
         use rustc_codegen_ssa::back::link::link_binary;
-        link_binary(sess, &RlibArchiveBuilder, codegen_results, outputs);
+        link_binary(sess, &RlibArchiveBuilder, codegen_results, metadata, outputs, "");
     }
 }
 // Inspired by cranelifts glue code. Is responsible for turing the files produced by teh backend into

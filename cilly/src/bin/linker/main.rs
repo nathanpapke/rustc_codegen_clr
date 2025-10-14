@@ -328,9 +328,9 @@ fn main() {
     }
     if !*PANIC_MANAGED_BT {
         if *C_MODE {
-            cilly::v2::builtins::unwind::c_raise_exception(&mut final_assembly, &mut overrides);
+           //cilly::v2::builtins::unwind::c_raise_exception(&mut final_assembly, &mut overrides);
         } else {
-            cilly::v2::builtins::unwind::raise_exception(&mut final_assembly, &mut overrides);
+            //cilly::v2::builtins::unwind::raise_exception(&mut final_assembly, &mut overrides);
         }
     }
     if !*C_MODE {

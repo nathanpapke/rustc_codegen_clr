@@ -107,8 +107,7 @@ pub fn handle_statement<'tcx>(
             tree: place_get(place, ctx),
         }
         .into()],
-        //Since deinitialization writes "uninint" bytes to the place, it is safe to write nothing here. "uninit" bytes can be anything, so they can be what was there previously too.
-        StatementKind::Deinit(_) => vec![],
+
         //TODO: consider adding some .NET specific coverage info(Is that even possible?).
         StatementKind::Coverage(_) => vec![],
         // A no-op in non-const scenarions, so safe to do nothing.

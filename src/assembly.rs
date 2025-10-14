@@ -22,7 +22,7 @@ use rustc_codegen_clr_ctx::function_name;
 pub use rustc_codegen_clr_ctx::MethodCompileCtx;
 use rustc_codegen_clr_type::{adt::field_descrptor, r#type::get_type, utilis::is_zst, GetTypeExt};
 use rustc_codgen_clr_operand::static_data::add_static;
-use rustc_middle::mir::mono::Linkage;
+use rustc_hir::attrs::Linkage;
 use rustc_middle::{
     mir::{interpret::GlobalAlloc, mono::MonoItem, Local, LocalDecl, Statement, Terminator},
     ty::{TyCtxt, TyKind},

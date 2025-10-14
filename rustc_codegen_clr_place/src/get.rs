@@ -231,13 +231,7 @@ fn place_elem_get<'a>(
                 }
             }
         }
-        PlaceElem::Subtype(tpe) => {
-            if body_ty_is_by_address(curr_type.as_ty().unwrap(), ctx) {
-                super::deref_op((*tpe).into(), ctx, addr_calc)
-            } else {
-                addr_calc
-            }
-        }
+       
         _ => todo!("Can't handle porojection {place_elem:?} in get"),
     }
 }

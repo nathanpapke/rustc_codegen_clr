@@ -143,9 +143,9 @@ fn unsized_info<'tcx>(
             V1Node::V2(ctx.alloc_node(Const::USize(len)))
         }
         (
-            &TyKind::Dynamic(data_a, _, src_dyn_kind),
-            &TyKind::Dynamic(data_b, _, target_dyn_kind),
-        ) if src_dyn_kind == target_dyn_kind => {
+            &TyKind::Dynamic(data_a, _),
+            &TyKind::Dynamic(data_b, _),
+        ) => {
             let old_info =
                 old_info.expect("unsized_info: missing old info for trait upcasting coercion");
             if data_a.principal_def_id() == data_b.principal_def_id() {

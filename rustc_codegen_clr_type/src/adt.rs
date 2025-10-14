@@ -213,8 +213,10 @@ pub fn field_descrptor<'tcx>(
             field_type,
         ));
     } else if let TyKind::Coroutine(_, args) = owner_ty.kind() {
-        let coroutine = args.as_coroutine().witness();
-        let TyKind::CoroutineWitness(_, fields) = coroutine.kind() else {
+        todo!();
+        /*
+        let coroutine = args.as_coroutine();
+        let TyKind::CoroutineWitness(_, fields) = coroutine.kind_ty() else {
             panic!("corutine witness is not CoroutineWitness.");
         };
         let field_type = fields
@@ -234,7 +236,7 @@ pub fn field_descrptor<'tcx>(
             owner_type.as_class_ref().expect("Coroutine type invalid!"),
             field_name,
             field_type,
-        ));
+        )); */
     }
     let (adt, subst) = as_adt(owner_ty).expect("Tried to get a field of a non ADT or tuple type!");
     let field = adt
